@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
+import base64
 import json
 from collections import OrderedDict
 from pathlib import Path
 
 from formatting import Formatters
+
 
 class ExternalImage(object):
     def __init__(self, basedir=Path("."), flavor="gfm"):
@@ -26,7 +28,12 @@ class ExternalImage(object):
 
         elif mimetype == "image/png":
             # Inline
-            return f'<div><img src="data:image/png;base64, {imagedata}"></div>'
+            if self.flavor == "gfm":
+                return f'<div><img src="data:image/png;base64, {imagedata}"></div>'
+            else:
+                filename = f"output_{len(self.images)}.png"
+                self.images.append((filename, base64.b64decode(imagedata )))
+                return f'![]({filename})'
 
     def write(self):
         for fn, data in self.images:
