@@ -1,11 +1,18 @@
 # Formatting Code for nb2md
 
+import re
+from collections import OrderedDict
+
+
 class GFMFormatter(object):
     def __init__(self, external_image):
         self.external_image = external_image
 
-    def markdown(cell):
-        cell_text = "".join(cell["source"])
+    def finalize(self):
+        self.external_image.write()
+
+    def markdown(self, cell):
+        cell_text = "\n".join(l.rstrip() for l in cell["source"])
         cell_text = re.sub(r'!\[(.*)\]\((.*)\)', 
                             r'{% include image.html img="\2" caption="\1"%}', 
                             cell_text)
@@ -22,7 +29,7 @@ class GFMFormatter(object):
 
         return cell_text
 
-    def preamble(cell, download_link):
+    def preamble(self, cell, download_link):
         return f"""---
 layout: post
 title: cell["source"][1][2:]
@@ -35,20 +42,20 @@ img: cell["source"][4][2:]
 
 """
 
-    def source(cell):
-    return f"""```python
+    def source(self, cell):
+        return f"""```python
 {"".join(cell["source"])}
 ```"""
 
-    def output(cell):
-        for mime, handler in cell_output_handlers:
+    def output(self, data):
+        for mime, handler in cell_output_handlers.items():
             if mime in data:
-                return handler(data, self.external_image)
+                return handler(data[mime], self.external_image)
 
 
 # Similar to GFM, but without a preamble and image substitution:
 class DiderotFormatter(GFMFormatter):
-    def markdown(cell):
+    def markdown(self, cell):
         cell_text = "".join(cell["source"])
         cell_text = escape_symbols(cell_text)
         cell_text = re.sub(r'\\begin{equation}(.*?)\\end{equation}',
@@ -56,7 +63,7 @@ class DiderotFormatter(GFMFormatter):
                             cell_text, flags=re.DOTALL)
         return cell_text
 
-    def preamble(cell, download_link):
+    def preamble(self, cell, download_link):
         return None
 
 
@@ -81,5 +88,10 @@ cell_output_handlers = OrderedDict([
     ("text/html",     lambda d, img: f"<div><small>{''.join(d)}</small></div>"),
     ("image/svg+xml", lambda d, img: img.process("image/svg+xml", d)),
     ("image/png",     lambda d, img: img.process("image/png", d)),
-    ("text/plain",    lambda d, img: f"<pre>{''.join(d)}</pre>"),
-    ("text",          lambda d, img: f"<pre>{''.join(d)}</pre>")])
+    ("text/plain",    lambda d, img: f"```output\n{''.join(d)}\n```"),
+    ("text",          lambda d, img: f"```output\n{''.join(d)}\n```")])
+
+Formatters = {
+    "gfm": GFMFormatter,
+    "diderot": DiderotFormatter
+}
