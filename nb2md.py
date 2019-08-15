@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import json
@@ -8,15 +8,21 @@ from pathlib import Path
 from formatting import Formatters
 
 class ExternalImage(object):
-    def __init__(self, flavor="gfm"):
+    def __init__(self, basedir=Path("."), flavor="gfm"):
+        self.flavor = flavor
+        self.basedir = basedir
         self.images = []
 
     def process(self, mimetype, imagedata):
         if mimetype == "image/svg+xml":
-            file = f"output_{len(self.images)}.svg"
+            filename = f"output_{len(self.images)}.svg"
             # Prepare the svg file for writing:
-            self.images.append((file, imagedata.encode()))
-            return f'{{% include image.html img="{file}" %}}'
+            assert isinstance(imagedata, list)
+            self.images.append((filename, "\n".join(imagedata).encode()))
+            if self.flavor == "gfm":
+                return f'{{% include image.html img="{filename}" %}}'
+            else:
+                return f'![]({filename})'
 
         elif mimetype == "image/png":
             # Inline
@@ -24,17 +30,18 @@ class ExternalImage(object):
 
     def write(self):
         for fn, data in self.images:
-            Path(fn).write_bytes(data)
+            (self.basedir / fn).write_bytes(data)
 
 def main(args):
     data = json.loads(args.nb_file.read_text())
-    formatter = Formatters[args.flavor](ExternalImage(flavor=args.flavor))
 
     output_file = args.output if args.output else args.nb_file.with_suffix(".md")
     if output_file.suffix != ".md":
         output_file = output_file / args.nb_file.with_suffix(".md").name
     # Ensure parent exists
     output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    formatter = Formatters[args.flavor](ExternalImage(basedir=output_file.parent, flavor=args.flavor))
 
     output = []
 
