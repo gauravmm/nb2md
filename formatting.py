@@ -88,8 +88,8 @@ cell_output_handlers = OrderedDict([
     ("text/html",     lambda d, img: f"<div><small>{''.join(d)}</small></div>"),
     ("image/svg+xml", lambda d, img: img.process("image/svg+xml", d)),
     ("image/png",     lambda d, img: img.process("image/png", d)),
-    ("text/plain",    lambda d, img: f"```output\n{''.join(d)}\n```"),
-    ("text",          lambda d, img: f"```output\n{''.join(d)}\n```")])
+    ("text/plain",    lambda d, img: f"```\n{''.join(d)}\n```"),
+    ("text",          lambda d, img: f"```\n{''.join(d)}\n```")])
 
 Formatters = {
     "gfm": GFMFormatter,
