@@ -28,12 +28,9 @@ class ExternalImage(object):
 
         elif mimetype == "image/png":
             # Inline
-            if self.flavor == "gfm":
-                return f'<div><img src="data:image/png;base64, {imagedata}"></div>'
-            else:
-                filename = f"output_{len(self.images)}.png"
-                self.images.append((filename, base64.b64decode(imagedata )))
-                return f'![]({filename})'
+            filename = f"output_{len(self.images)}.png"
+            self.images.append((filename, base64.b64decode(imagedata )))
+            return f'![]({filename})'
 
     def write(self):
         for fn, data in self.images:
