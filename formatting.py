@@ -49,7 +49,7 @@ img: cell["source"][4][2:]
 
     def output(self, data):
         if isinstance(data, list):
-            return cell_output_handlers["text/plain"](data, None)
+            return f"<pre>None\n{''.join(data)}\n</pre>"
 
         for mime, handler in cell_output_handlers.items():
             if mime in data:
@@ -69,6 +69,11 @@ class DiderotFormatter(GFMFormatter):
     def preamble(self, cell, download_link):
         return None
 
+    def output(self, data):
+        if isinstance(data, list):
+            return f"```\n{''.join(data)}\n```"
+
+        return super().output(data)
 
 # Utility functions:
 def escape_symbols(text):
@@ -90,8 +95,7 @@ def escape_symbols(text):
 cell_output_handlers = OrderedDict([
     ("text/html",     lambda d, img: f"<div><small>{''.join(d)}</small></div>"),
     ("image/svg+xml", lambda d, img: img.process("image/svg+xml", d)),
-    ("image/png",     lambda d, img: img.process("image/png", d)),
-    ("text/plain",    lambda d, img: f"```\n{''.join(d)}\n```")])
+    ("image/png",     lambda d, img: img.process("image/png", d))])
 
 Formatters = {
     "gfm": GFMFormatter,
