@@ -1,5 +1,6 @@
 # Formatting Code for nb2md
 
+import html
 import re
 from collections import OrderedDict
 
@@ -49,7 +50,7 @@ img: cell["source"][4][2:]
 
     def output(self, data):
         if isinstance(data, list):
-            return f"<pre>\n{''.join(data)}\n</pre>\n"
+            return f"<pre>\n{''.join(html.escape(d) for d in data)}\n</pre>\n"
 
         for mime, handler in cell_output_handlers.items():
             if mime in data:
