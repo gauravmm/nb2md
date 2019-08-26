@@ -48,6 +48,9 @@ img: cell["source"][4][2:]
 ```"""
 
     def output(self, data):
+        if isinstance(data, list):
+            return cell_output_handlers["text/plain"](data, None)
+
         for mime, handler in cell_output_handlers.items():
             if mime in data:
                 return handler(data[mime], self.external_image)
@@ -88,8 +91,7 @@ cell_output_handlers = OrderedDict([
     ("text/html",     lambda d, img: f"<div><small>{''.join(d)}</small></div>"),
     ("image/svg+xml", lambda d, img: img.process("image/svg+xml", d)),
     ("image/png",     lambda d, img: img.process("image/png", d)),
-    ("text/plain",    lambda d, img: f"```\n{''.join(d)}\n```"),
-    ("text",          lambda d, img: f"```\n{''.join(d)}\n```")])
+    ("text/plain",    lambda d, img: f"```\n{''.join(d)}\n```")])
 
 Formatters = {
     "gfm": GFMFormatter,

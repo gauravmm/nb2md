@@ -74,7 +74,7 @@ def main(args):
                     except IndexError:
                         continue
 
-                    output.append(formatter.output(cell["outputs"][output_cell_index]["text" if output_cell_type == "stream" else "data"]))
+                output.append(formatter.output(cell["outputs"][output_cell_index]["text" if output_cell_type == "stream" else "data"]))
 
     output_file.write_text("\n\n".join(filter(lambda o: o is not None, output)) + "\n")
     formatter.finalize()
