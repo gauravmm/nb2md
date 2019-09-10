@@ -37,7 +37,7 @@ class ExternalImage(object):
             (self.basedir / fn).write_bytes(data)
 
 def main(args):
-    data = json.loads(args.nb_file.read_text())
+    data = json.loads(args.nb_file.read_bytes().decode("UTF-8"))
 
     output_file = args.output if args.output else args.nb_file.with_suffix(".md")
     if output_file.suffix != ".md":
@@ -73,7 +73,7 @@ def main(args):
 
                 output.append(formatter.output(cell["outputs"][output_cell_index]["text" if output_cell_type == "stream" else "data"]))
 
-    output_file.write_text("\n\n".join(filter(lambda o: o is not None, output)) + "\n")
+    output_file.write_bytes(("\n\n".join(filter(lambda o: o is not None, output)) + "\n").encode("UTF-8"))
     formatter.finalize()
 
 if __name__ == "__main__":
